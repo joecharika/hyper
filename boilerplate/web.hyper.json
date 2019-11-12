@@ -1,0 +1,15 @@
+{
+  "db": {
+    "host": "localhost",
+    "port": 80,
+    "database": "",
+    "username": "",
+    "password": ""
+  },
+  "debug": true,
+  "errors": {
+    "defaultPath": "shared/error.html.twig",
+    "custom": {}
+  },
+  "reportLink": "<yourReportLink>"
+}

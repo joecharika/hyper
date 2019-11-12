@@ -1,0 +1,32 @@
+{
+  "name": "hyper/hyper",
+  "type": "library",
+  "description": "Hyper, fast MVC framework for PHP",
+  "keywords": [
+    "MVC"
+  ],
+  "homepage": "http://hyper.com",
+  "license": "BSD-3-Clause",
+  "authors": [
+    {
+      "name": "Fabien Potencier",
+      "email": "fabien@symfony.com",
+      "homepage": "http://fabien.potencier.org",
+      "role": "Lead Developer"
+    }
+  ],
+  "require": {
+    "twig/twig": "^2.0",
+    "funcphp/twig-compress": "dev-master",
+    "ext-pdo": "*",
+    "ext-json": "*",
+    "ext-mysqli": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Hyper\\": "src/hyper/",
+      "Controllers\\": "src/controllers/",
+      "Models\\": "src/models/"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "require": {
+    "twig/twig": "^2.0",
+    "funcphp/twig-compress": "dev-master",
+    "ext-pdo": "*",
+    "ext-json": "*",
+    "ext-mysqli": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Hyper\\": "vendor/hyper/",
+      "Controllers\\": "controllers/",
+      "Models\\": "models/"
+    }
+  }
+}
