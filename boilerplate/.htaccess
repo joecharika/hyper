@@ -9,3 +9,10 @@ RewriteCond %{REQUEST_URI} !.*\.css$ [NC]
 RewriteCond %{REQUEST_URI} !.*\.gif$ [NC]
 RewriteCond %{REQUEST_URI} !.*\.js$ [NC]
 RewriteRule .* /index.php
+
+# Protect your configuration
+<Files ~ "web.hyper.json">
+order allow,deny
+deny from all
+satisfy all
+</Files>
