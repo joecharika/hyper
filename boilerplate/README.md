@@ -24,7 +24,7 @@ Your `composer.json` basically looks like this:
     "psr-4": {
       "Hyper\\": "vendor/hyper/", //OR replace with path to hyper
       "Controllers\\": "controllers/", //OR replace with path to your controllers
-      "Models\\": "models/" //OR replace with path to your models
+      "Models\\": "models/"//OR replace with path to your models
     }
   }
 }
