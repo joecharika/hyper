@@ -6,11 +6,10 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Twig\\Extensions\\' => array($vendorDir . '/twig/extensions/src'),
     'Twig\\' => array($vendorDir . '/twig/twig/src'),
     'Symfony\\Polyfill\\Mbstring\\' => array($vendorDir . '/symfony/polyfill-mbstring'),
     'Symfony\\Polyfill\\Ctype\\' => array($vendorDir . '/symfony/polyfill-ctype'),
-    'Models\\' => array($baseDir . '/src/models'),
-    'Hyper\\' => array($vendorDir . '/hyper'),
+    'Hyper\\' => array($baseDir . '/src/hyper'),
     'Func\\' => array($vendorDir . '/funcphp/twig-compress'),
-    'Controllers\\' => array($baseDir . '/src/controllers'),
 );

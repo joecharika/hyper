@@ -1,12 +1,9 @@
 <?php
 
-/*
- * This file is part of Twig.
- *
- * (c) Fabien Potencier
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+/**
+ * Hyper v0.7.2-beta.2 (https://hyper.starlight.co.zw)
+ * Copyright (c) 2020. Joseph Charika
+ * Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
  */
 
 namespace Twig;
@@ -38,11 +35,11 @@ use Twig\TokenParser\TokenParserInterface;
  */
 class Environment
 {
-    const VERSION = '2.12.1';
-    const VERSION_ID = 21201;
+    const VERSION = '2.12.3';
+    const VERSION_ID = 21203;
     const MAJOR_VERSION = 2;
     const MINOR_VERSION = 12;
-    const RELEASE_VERSION = 1;
+    const RELEASE_VERSION = 3;
     const EXTRA_VERSION = '';
 
     private $charset;
@@ -435,7 +432,7 @@ class Environment
      *
      * This method should not be used as a generic way to load templates.
      *
-     * @param string $template The template name
+     * @param string $template The template source
      * @param string $name     An optional name of the template to be used in error messages
      *
      * @return TemplateWrapper A template instance representing the given template name

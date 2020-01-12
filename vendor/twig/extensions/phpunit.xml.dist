@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Hyper v0.7.2-beta.2 (https://hyper.starlight.co.zw)
+  ~ Copyright (c) 2020. Joseph Charika
+  ~ Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
+  -->
+
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         syntaxCheck="false"
+         bootstrap="vendor/autoload.php"
+>
+    <testsuites>
+        <testsuite name="Twig Extensions Test Suite">
+            <directory>./test/Twig/</directory>
+        </testsuite>
+    </testsuites>
+
+    <filter>
+        <whitelist>
+            <directory suffix=".php">./lib/Twig/</directory>
+        </whitelist>
+    </filter>
+</phpunit>

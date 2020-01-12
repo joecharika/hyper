@@ -1,25 +1,44 @@
 <?php
-
+/**
+ * Hyper v0.7.2-beta.2 (https://hyper.starlight.co.zw)
+ * Copyright (c) 2020. Joseph Charika
+ * Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
+ */
 
 namespace Hyper\Exception;
 
 
-use Hyper\Application\HyperApp;
+use Exception;
 
 class HyperHttpException extends HyperException
 {
-    public function notFound($message = "Not found")
+    public static function notFound($message = "Not found"): Exception
     {
-        (new HyperHttpException(HyperApp::$debug ? $message : "Not found", "404"))->throw();
+        return self::get($message, "404");
     }
 
-    public function badRequest()
+    private static function get($message, $code)
     {
-        (new HyperHttpException("Bad request", "400.5"))->throw();
+        $exc = new HyperHttpException($message, $code);
+        $var = @debug_backtrace()[1];
+
+        $exc->line = @$var['line'];
+        $exc->file = @$var['file'];
+
+        return $exc;
     }
 
-    public function notAuthorised()
+    public static function badRequest(): Exception
     {
-        (new HyperHttpException("Not authorised", "403"))->throw();
+        return self::get("Bad request", "400.5");
     }
+
+    public static function notAuthorised(): Exception
+    {
+        return self::get("Not authorised", "403");
+    }
+}
+
+class HttpResponse extends HyperHttpException
+{
 }

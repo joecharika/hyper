@@ -1,12 +1,9 @@
 <?php
 
-/*
- * This file is part of Twig.
- *
- * (c) Fabien Potencier
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+/**
+ * Hyper v0.7.2-beta.2 (https://hyper.starlight.co.zw)
+ * Copyright (c) 2020. Joseph Charika
+ * Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
  */
 
 namespace Twig\Extension {
@@ -490,7 +487,7 @@ function twig_date_modify_filter(Environment $env, $date, $modifier)
  * @param \DateTimeInterface|string|null  $date     A date or null to use the current time
  * @param \DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
  *
- * @return \DateTime
+ * @return \DateTimeInterface
  */
 function twig_date_converter(Environment $env, $date = null, $timezone = null)
 {

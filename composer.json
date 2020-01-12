@@ -3,15 +3,14 @@
   "type": "library",
   "description": "Hyper, fast MVC framework for PHP",
   "keywords": [
-    "MVC"
+    "MVC","Light weight", "Hyper"
   ],
-  "homepage": "http://hyper.com",
-  "license": "BSD-3-Clause",
+  "homepage": "http://hyper.starlight.co.zw",
+  "license": "MIT",
   "authors": [
     {
-      "name": "Fabien Potencier",
-      "email": "fabien@symfony.com",
-      "homepage": "http://fabien.potencier.org",
+      "name": "Joseph Charika",
+      "email": "joecharika@gmail.com",
       "role": "Lead Developer"
     }
   ],
@@ -20,13 +19,12 @@
     "funcphp/twig-compress": "dev-master",
     "ext-pdo": "*",
     "ext-json": "*",
-    "ext-mysqli": "*"
+    "ext-mysqli": "*",
+    "twig/extensions": "^1.5"
   },
   "autoload": {
     "psr-4": {
-      "Hyper\\": "src/hyper/",
-      "Controllers\\": "src/controllers/",
-      "Models\\": "src/models/"
+      "Hyper\\": "./src/hyper/"
     }
   }
 }

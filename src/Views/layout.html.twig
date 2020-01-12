@@ -1,0 +1,133 @@
+<!--
+ * Hyper v1.0.0-beta.2 (https://hyper.starlight.co.zw)
+ * Copyright (c) 2019. J.Charika
+ * Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
+-->
+{% compress %}
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>{{ title }}</title>
+        <style id="mac-window-style">
+            html, body {
+                padding: 0;
+                margin: 0;
+                height: 100%;
+                font-family: 'Work Sans', sans-serif;
+            }
+
+            .ancient-one {
+                background-image: url(/assets/img/ancient-one.gif);
+                background-position: bottom;
+                background-size: contain;
+                background-repeat: no-repeat;
+                height: 800px;
+                flex-grow: 1;
+            }
+
+            .window {
+                width: calc(100% - 4rem);
+                background: #eee;
+                display: block;
+                margin: 0 auto;
+                min-height: 100px;
+                position: relative;
+                border-radius: 6px;
+                overflow: auto;
+            }
+
+            .mac.window {
+                box-shadow: 0 1px 1px 1px rgba(0, 0, 0, 0.06);
+                margin: 2rem;
+            }
+
+            .mac .title-bar {
+                height: 40px;
+                background: linear-gradient(to bottom, #f0f0f0, #e9e9e9);
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
+                border-top: 1px solid #faf9ff;
+                display: flex;
+                align-items: center;
+                padding: 4px;
+            }
+
+            .mac .close, .mac .minimize, .mac .zoom {
+                height: 12px;
+                min-height: 12px;
+                border-radius: 6px;
+                background: #ddd;
+                margin: 4px;
+                width: 12px;
+                min-width: 12px;
+
+            }
+
+            .mac .title {
+                margin: 3px;
+                font-weight: bold;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap
+            }
+
+            .mac .close {
+                background-color: #ff6052;
+                left: 10px;
+            }
+
+            .mac .minimize {
+                background-color: #ffbe06;
+                left: 32px;
+            }
+
+            .mac .zoom {
+                background-color: #16cc37;
+                left: 54px;
+            }
+
+            .mac .maximize {
+                height: 20px;
+                width: 20px;
+                background: #aaa;
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                -webkit-clip-path: polygon(2px 9px, 0px 7px, 0px 14px, 7px 14px, 5px 12px, 7px 10px, 4px 7px, 7px 4px, 10px 7px, 12px 5px, 14px 7px, 14px 0px, 7px 0px, 9px 2px);
+            }
+
+            .mac .page {
+                padding: 1rem;
+                height: calc((100% - 3rem) - 40px);
+                overflow: auto;
+            }
+
+            .button {
+                display: inline-block;
+                padding: 8px 28px;
+                color: white;
+                transition: all .4s ease-in-out;
+                text-decoration: none;
+                border-radius: 28px;
+                background: rebeccapurple;
+                margin: 2px;
+                box-shadow: 0 0 4px 1px rgba(69, 6, 68, 0.1);
+                border: rgba(69, 6, 68, 0.2) 2px solid;
+            }
+
+            .button:hover {
+                color: rebeccapurple;
+                background: #fff;
+                box-shadow: 0 0 15px 1px rgba(69, 6, 68, 0.1);
+                border-color: white;
+            }
+        </style>
+        {% block styles %}{% endblock %}
+    </head>
+    <body>
+    {% block body %}{% endblock %}
+    </body>
+    </html>
+{% endcompress %}

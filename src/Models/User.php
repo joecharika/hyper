@@ -1,19 +1,25 @@
 <?php
 /**
- * hyper v1.0.0-beta.2 (https://hyper.com/php)
- * Copyright (c) 2019. J.Charika
+ * Hyper v0.7.2-beta.2 (https://hyper.starlight.co.zw)
+ * Copyright (c) 2020. Joseph Charika
  * Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
  */
 
 namespace Hyper\Models;
 
 
+use Hyper\Annotations\file;
 use Hyper\Application\Authorization;
+use Hyper\Functions\Debug;
 use Hyper\Functions\Obj;
+use Hyper\Http\Cookie;
+use Hyper\SQL\SQLAttributes;
+use function Hyper\Database\db;
+use function is_null;
 
 /**
  * Class User
- * @package hyper\Application
+ * @package hyper\Models
  */
 class User
 {
@@ -23,41 +29,41 @@ class User
      * @SQLType varchar(128)
      * @SQLAttributes primary key unique not null
      */
-    public $id;
-    public $name;
-    public $username;
-    public $lastName;
-    public $otherNames;
+    public $id,
+
+        /**
+         * @var string $username
+         * @SQLType varchar(128)
+         * @SQLAttributes unique not null
+         */
+        $username,
+
+        $name, $lastName, $otherNames,
+        $phone, $email, $notes,
+        $role, $key, $salt, $lockedOut = false,
+        $isEmailVerified, $isPhoneVerified;
+
     /**
      * @var string
-     * @isFile
-     * @UploadAs File
+     * @file
      * @required
      */
     public $image;
-    public $phone;
-    public $email;
-    public $notes;
-    public $role;
-    public $key;
-    public $salt;
-    public $lockedOut;
-    public $lastLogInToken;
-    public $isLoggedIn;
-    public $lastLoginBrowser;
-    public $lastLoginDate;
-    public $lastLoginIP;
-    public $isEmailVerified;
-    public $isPhoneVerified;
+
 
     public function __construct($username = null)
     {
-        $this->username = $username;
+        if (isset($username))
+            $this->username = $username;
     }
 
-    public static function isAuthenticated()
+    public static function isAuthenticated(): bool
     {
-        return !is_null((new Authorization)->user);
+        $token = (new Cookie)->getCookie('__user');
+
+        return empty($token)
+            ? false
+            : !is_null(db('claim')->first('token', $token));
     }
 
     public static function isInRole($role)
@@ -72,7 +78,7 @@ class User
 
     public static function getRole()
     {
-        return Obj::property((new Authorization)->getSession()->user, 'role');
+        return Obj::property((new Authorization)->getSession()->user, 'role', 'visitor');
     }
 
     public static function getId()
@@ -82,6 +88,6 @@ class User
 
     public function __toString()
     {
-        return $this->name . ' ' . $this->otherNames . ' ' . $this->lastName;
+        return "$this->name $this->otherNames $this->lastName";
     }
 }

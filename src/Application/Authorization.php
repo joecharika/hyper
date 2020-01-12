@@ -1,90 +1,127 @@
 <?php
 /**
- * hyper v1.0.0-beta.2 (https://hyper.com/php)
- * Copyright (c) 2019. J.Charika
+ * Hyper v0.7.2-beta.2 (https://hyper.starlight.co.zw)
+ * Copyright (c) 2020. Joseph Charika
  * Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
  */
 
 namespace Hyper\Application;
 
 
-use DateInterval;
-use DateTime;
-use Exception;
 use Hyper\Database\DatabaseContext;
-use Hyper\Functions\Arr;
-use Hyper\Models\User;
+use Hyper\Functions\{Obj};
+use Hyper\Http\Cookie;
+use Hyper\Models\{Claim, User};
+use Hyper\Utils\{General, Generator};
 
 /**
  * Class Authorization
- * @package hyper\Application
+ * @package Hyper\Application
  */
 class Authorization
 {
-    /** @var string */
-    public $token;
+    /** @var string $token */
+    private $token;
 
     /** @var User */
-    public $user;
+    private $user;
 
     /** @var DatabaseContext */
-    private $db;
+    private $claims;
 
-    private $cryptoAlgorithm = "whirlpool";
+    /** @var DatabaseContext */
+    private $users;
 
+    /** @var string */
+    private $cryptoAlgorithm = 'whirlpool';
+
+    /** @var Cookie */
+    private $cookie;
+
+    /**
+     * Authorization constructor.
+     */
     public function __construct()
     {
-        $this->db = new DatabaseContext('user');
+        $this->users = new DatabaseContext('user');
+        $this->claims = new DatabaseContext('claim');
+        $this->cookie = new Cookie();
 
-        if (session_status() !== 2) session_start();
-        $this->restoreSession();
+        ['token' => $this->token, 'user' => $this->user] = (array)$this->getSession();
     }
 
-    private function restoreSession()
-    {
-        $this->user = $this->getSession()->user;
-        $this->token = $this->getSession()->token;
-    }
-
+    /**
+     * @return object|NULL
+     */
     public function getSession()
     {
-        if (session_status() !== 2) return null;
+        if (isset($this->token) && isset($this->user)) {
+            $token = $this->token;
+            $user = $this->user;
+        } else {
+            $token = $this->token = $this->cookie->getCookie('__user');
+
+            /** @var Claim $claim */
+            $claim = empty($token) ? null : $this->claims->first('token', $token);
+
+            # Session deleted remotely or has expired
+            if (!isset($claim)) {
+                $this->cookie->removeCookie('__user');
+                return (object)[
+                    'token' => null,
+                    'user' => null,
+                ];
+            }
+
+            if (empty(HyperApp::$storage['userClaim']))
+                HyperApp::$storage['userClaim'] = $claim;
+
+            HyperApp::$user = $user = $this->user = Obj::property($claim, 'user',
+                $this->users->first('id', $claim->userId ?? ''));
+        }
 
         return (object)[
-            "id" => session_id(),
-            "token" => $this->token,
-            "user" => $this->db->firstById(Arr::safeArrayGet($_SESSION, "user", 0)),
-            "expiryDate" => $this->getExpiryDate(),
+            'token' => $token,
+            'user' => $user
         ];
     }
 
     /**
-     * @return DateTime|false|null
+     * @return User|null
      */
-    public function getExpiryDate()
+    public function getUser()
     {
-        try {
-            return date_add(new DateTime(), new DateInterval(session_cache_expire()));
-        } catch (Exception $exc) {
-            return null;
-        }
+        return $this->user;
     }
 
-    public function logout()
+    /**
+     * Logout currently logged in user
+     * @return bool
+     */
+    public function logout(): bool
     {
         $this->user = null;
-        $this->destroySession();
+        @HyperApp::$storage['userClaim']->state = 0;
+
+        return $this->cookie->removeCookie('__user')
+            && $this->claims->delete(HyperApp::$storage['userClaim']);
     }
 
-    private function destroySession()
-    {
-        unset($_SESSION["user"]);
-        if (session_start() === 2) session_destroy();
-    }
-
-    public function register(string $username, string $password, $role = "default")
+    /**
+     * Register a new user with username and password
+     * @param string $username
+     * @param string $password
+     * @param string $role
+     * @return User|string
+     */
+    public function register(string $username, string $password, $role = 'default')
     {
         $user = new User($username);
+        $exists = $this->users->first('username', $username);
+
+        if (isset($exists)) return "Username '$username' is already taken";
+
+        if (strlen($password) < 8) return 'Password must be at least 8 characters long';
 
         $user->id = uniqid();
         $user->salt = uniqid();
@@ -92,60 +129,72 @@ class Authorization
         $user->name = $username;
         $user->role = $role;
 
-        if ($this->db->insert($user))
-            $this->login($username, $password);
+        if ($this->users->add($user))
+            return $this->login($username, $password);
+
+        return 'Registration failed';
     }
 
     /**
+     * Generate a PBKDF2 key derivation of a supplied password
      * @param string $password
      * @param string $salt
      * @return mixed
      */
-    public function encrypt(string $password, $salt = null)
+    public function encrypt(string $password, $salt = null): string
     {
-        $salt = isset($salt) ? $salt : uniqid();
-        return hash_pbkdf2($this->cryptoAlgorithm, $password, $salt, 7);
+        return hash_pbkdf2($this->cryptoAlgorithm, $password, $salt ?? uniqid(), 7);
     }
 
+    /**
+     * Sign in a user with username and password
+     * @param string $username
+     * @param string $password
+     * @return User|string
+     */
     public function login(string $username, string $password)
     {
-        $this->user = new User($username);
+        #Get user from the database
+        $this->user = $this->users->first('username', $username);
 
-        $this->user = $this->db->first(function ($user) {
-            return $user->username === $this->user->username;
-        });
-
-        if (!is_null($this->user)) {
+        if (isset($this->user)) {
+            if ($this->user->lockedOut) return 'Your account has been disabled. Contact admin for more';
             if ($this->user->key === $this->encrypt($password, $this->user->salt)) {
-                $this->createSession($this->user);
-                HyperApp::$user = $this->user;
-                return $this->user;
-            } else return "Password is incorrect";
+                if ($this->createSession($this->user))
+                    return HyperApp::$user = $this->user;
+            } else return 'Password is incorrect';
         }
-        return "User does not exist";
+
+        return 'User is not registered';
     }
 
-    private function createSession($user): bool
+    /**
+     * Create a new session
+     * @param User $user
+     * @return bool True if the session update was accepted,
+     */
+    private function createSession(User $user): bool
     {
+        $newToken = Generator::token($user->id);
 
-        $_SESSION["user"] = $user->id;
+        # Create a new login claim
+        $update = $this->claims
+            ->add((new Claim())
+                ->setId(uniqid())
+                ->setToken($newToken)
+                ->setUserId($user->id)
+                ->setBrowser(General::browser())
+                ->setIPAddress(General::ipAddress())
+                ->setState(true)
+            );
 
-        $user->lastLoginIP = $this->getUserIpAddr();
-        $user->lastLoginDate = date('Y-m-d h:m:s');
-        $user->lastLoginBrowser = Arr::safeArrayGet($_SERVER, 'HTTP_USER_AGENT', 'Unknown browser/User agent');
-
-        return $this->db->update($user);
-    }
-
-    public function getUserIpAddr()
-    {
-        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-            $ip = $_SERVER['HTTP_CLIENT_IP'];
-        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } else {
-            $ip = $_SERVER['REMOTE_ADDR'];
+        # Check if the update was accepted or not
+        if ($update) {
+            # Save user.id to session
+            $this->cookie->addCookie('__user', $newToken, 0, '/');
         }
-        return $ip;
+
+        return $update;
     }
+
 }

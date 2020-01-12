@@ -1,9 +1,14 @@
 <?php
+/**
+ * Hyper v0.7.2-beta.2 (https://hyper.starlight.co.zw)
+ * Copyright (c) 2020. Joseph Charika
+ * Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
+ */
 
 namespace Hyper\Models;
 
 
-use Hyper\Application\Request;
+use Hyper\Http\Request;
 
 class Pagination
 {
@@ -20,9 +25,15 @@ class Pagination
         $items,
         $baseUrl;
 
+    /** @var array */
+    public $pages;
+
     public function __construct(&$list, $page = 1, $perPage = 20)
     {
         $page = (int)$page;
+
+        if (isset($page))
+            $_GET['page'] = $page;
 
         $this->totalItems = count($list);
         $this->items = $list = array_slice($list, $perPage * ($page - 1), $perPage);
@@ -33,6 +44,12 @@ class Pagination
 
         $this->urls($page);
 
+        $this->pages = array_map(function ($_page) {
+            return (new Page())
+                ->setHref($this->baseUrl . $this->getQuery($_page))
+                ->setPage($_page);
+        }, range(1, $this->totalPages));
+
 //        if($page < 1) Request::redirectToUrl($this->firstPageUrl);
 //        if($page > $this->totalPages) Request::redirectToUrl($this->lastPageUrl);
     }
@@ -42,7 +59,7 @@ class Pagination
      */
     private function urls($page): void
     {
-        $this->baseUrl = Request::protocol() . '://' . Request::server() . Request::path();
+        $this->baseUrl = Request::protocol() . '://' . Request::host() . Request::path();
 
         $this->firstPageUrl = $this->baseUrl . $this->getQuery();
         $this->currentPageUrl = Request::url();
@@ -55,18 +72,19 @@ class Pagination
      * @param int $page
      * @return mixed
      */
-    public function getQuery(int $page = null)
+    public function getQuery(int $page = 1)
     {
-        if (isset($page))
-            $_GET['page'] = $page;
+        $newQuery = array_merge((array)Request::query(), ['page' => $page]);
 
-        $query = [];
-
-        foreach ((array)Request::query() as $k => $v) {
-            array_push($query, $k . '=' . $v);
+        if ($page === 1) {
+            unset($newQuery['page']);
         }
 
-        return '?' . implode('&', $query);
+        array_walk($newQuery, function (&$a, $b) {
+            $a = $b . '=' . $a;
+        });
+
+        return '?' . implode('&', $newQuery);
     }
 
 }

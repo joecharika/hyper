@@ -1,19 +1,13 @@
 <?php
-
+/**
+ * Hyper v0.7.2-beta.2 (https://hyper.starlight.co.zw)
+ * Copyright (c) 2020. Joseph Charika
+ * Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
+ */
 
 namespace Hyper\Exception;
 
 use Exception;
-use Func\Twig\CompressExtension;
-use Hyper\Application\HyperApp;
-use Hyper\Functions\Arr;
-use Hyper\Functions\Obj;
-use Hyper\ViewEngine\Html;
-use Twig\Environment;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
-use Twig\Loader\FilesystemLoader;
 
 /**
  * Class HyperException
@@ -21,80 +15,30 @@ use Twig\Loader\FilesystemLoader;
  */
 class HyperException extends Exception
 {
-    /**
-     * @var string
-     */
-    public $header = "HTTP/1.0 500 Internal server error",
-        $code = "500",
-        $message = "Internal Server error";
+    /** @var int */
+    public $code = 500;
+
+    /** @var string */
+    public $message = 'Internal Server error';
 
     /**
-     * @param null $message
+     * @param mixed $file
+     * @return HyperException
      */
-    public function throw($message = null)
+    public function setFile($file)
     {
-        !HyperApp::config()->debug || $this->message = is_null($message) ? $this->message : $message;
-        try {
-            $this->run();
-        } catch (LoaderError $e) {
-            print $e->getMessage();
-        } catch (RuntimeError $e) {
-            print $e->getMessage();
-        } catch (SyntaxError $e) {
-            print $e->getMessage();
-        }
+        $this->file = $file;
+        return $this;
     }
 
     /**
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
+     * @param mixed $line
+     * @return HyperException
      */
-    private function run()
+    public function setLine($line)
     {
-        $path = explode("\\", static::class);
-        $type = $path[array_key_last($path)];
-
-        $config = HyperApp::config();
-
-        $stackTrace = $config->debug ? $this->getTraceAsString() : '';
-        $stackTrace = str_replace('#', '<br>#', $stackTrace);
-        $stackTrace = $config->debug
-            ? Html::div(
-                ''
-                . Html::heading('<i>Stacktrace</i>', 5)
-                . Html::create('p', [], "# $type")
-                . Html::create('pre', ['class' => 'h-exc-code'], $stackTrace)
-                . Html::break(),
-                ['class="h-exc-stacktrace"']
-            )
-            : '';
-
-        $file = $config->debug
-            ? $config->errors->defaultPath
-            : Obj::property($config->errors->custom, $this->code,
-                $config->errors->defaultPath);
-
-        $twig = new Environment(new FilesystemLoader($_SERVER['DOCUMENT_ROOT'] . '/views/'));
-        $twig->addExtension(new CompressExtension());
-
-        try {
-            echo $twig->render($file, [
-                'title' => "Error $this->code" . ($config->debug ? " : $type" : ''),
-                'message' => $this->message,
-                'report' => $config->reportLink ?? "#",
-                'returnLink' => Arr::key($_SERVER, "HTTP_REFERER", "/"),
-                'website' => Arr::key($_SERVER, "HTTP_HOST", 'unknown_site') . Arr::safeArrayGet($_SERVER, 'PATH_INFO',
-                        ''),
-                'stackTrace' => $stackTrace,
-            ]);
-        } catch (LoaderError $e) {
-            throw $e;
-        } catch (RuntimeError $e) {
-            throw $e;
-        } catch (SyntaxError $e) {
-            throw $e;
-        }
-        exit(0);
+        $this->line = $line;
+        return $this;
     }
+
 }

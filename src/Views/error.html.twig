@@ -1,0 +1,81 @@
+{#
+ * Hyper v1.0.0-beta.2 (https://hyper.starlight.co.zw)
+ * Copyright (c) 2019. J.Charika
+ * Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
+#}
+
+{% extends 'layout.html.twig' %}
+{% block styles %}
+    <style>
+        footer {
+            padding: 1rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .blank {
+            background-color: #450644;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 1600 800'%3E%3Cg %3E%3Cpolygon fill='%23590536' points='1600 160 0 460 0 350 1600 50'/%3E%3Cpolygon fill='%236d0429' points='1600 260 0 560 0 450 1600 150'/%3E%3Cpolygon fill='%2382021b' points='1600 360 0 660 0 550 1600 250'/%3E%3Cpolygon fill='%2396010e' points='1600 460 0 760 0 650 1600 350'/%3E%3Cpolygon fill='%23A00' points='1600 800 0 800 0 750 1600 450'/%3E%3C/g%3E%3C/svg%3E");
+            background-attachment: fixed;
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .col-md-6 {
+                -ms-flex: 0 0 50%;
+                flex: 0 0 50%;
+                max-width: 50%
+            }
+        }
+
+        .blank .window.mac .page.mixin .title {
+            font-size: 38px;
+            font-weight: lighter;
+        }
+
+        .blank .window.mac {
+            box-shadow: 8px 8px 48px rgba(11, 11, 11, 0.68);
+        }
+
+        .mx-auto {
+            margin: auto 0;
+        }
+
+    </style>
+{% endblock %}
+{% block body %}
+    <div class="h-exc-exception">
+        <div class="blank">
+            <div class="window mac col-md-6 mx-auto">
+                <div class="title-bar">
+                    <a href="{{ returnLink }}" title="Close|Go back" class="close"></a>
+                    <a href="/" title="Minimize|Go to home" class="minimize"></a>
+                    <a href="{{ report }}" title="Zoom|Report error" class="zoom"></a>
+                    <div class="title">{{ title }}</div>
+                </div>
+                <div class="page mixin">
+                    <h1 class="title">{{ title }}</h1>
+                    <p>{{ error.message|raw }}</p>
+                    <nav>
+                        <a class="button" href="{{ returnLink }}">Go back</a>
+                        <a class="button" href="/">Home</a>
+                        <a class="button" href="{{ report }}">Report</a>
+                    </nav>
+                </div>
+            </div>
+            <footer class="h-exc-footer">
+                <small>
+                    <i>
+                        Powered by hyper &copy; Error reported {{ now|date('l, F j, Y \\a\\t g:i:s A') }}
+                    </i>
+                </small>
+            </footer>
+        </div>
+    </div>
+{% endblock %}

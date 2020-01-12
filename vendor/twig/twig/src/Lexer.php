@@ -1,13 +1,9 @@
 <?php
 
-/*
- * This file is part of Twig.
- *
- * (c) Fabien Potencier
- * (c) Armin Ronacher
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+/**
+ * Hyper v0.7.2-beta.2 (https://hyper.starlight.co.zw)
+ * Copyright (c) 2020. Joseph Charika
+ * Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
  */
 
 namespace Twig;
@@ -44,7 +40,7 @@ class Lexer
     const STATE_INTERPOLATION = 4;
 
     const REGEX_NAME = '/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/A';
-    const REGEX_NUMBER = '/[0-9]+(?:\.[0-9]+)?/A';
+    const REGEX_NUMBER = '/[0-9]+(?:\.[0-9]+)?([Ee][\+\-][0-9]+)?/A';
     const REGEX_STRING = '/"([^#"\\\\]*(?:\\\\.[^#"\\\\]*)*)"|\'([^\'\\\\]*(?:\\\\.[^\'\\\\]*)*)\'/As';
     const REGEX_DQ_STRING_DELIM = '/"/A';
     const REGEX_DQ_STRING_PART = '/[^#"\\\\]*(?:(?:\\\\.|#(?!\{))[^#"\\\\]*)*/As';

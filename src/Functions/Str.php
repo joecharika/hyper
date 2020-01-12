@@ -1,7 +1,7 @@
 <?php
 /**
- * hyper v1.0.0-beta.2 (https://hyper.com/php)
- * Copyright (c) 2019. J.Charika
+ * Hyper v0.7.2-beta.2 (https://hyper.starlight.co.zw)
+ * Copyright (c) 2020. Joseph Charika
  * Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
  */
 
@@ -39,13 +39,65 @@ abstract class Str
 
         $last_letter = strtolower($singular[strlen($singular) - 1]);
         switch ($last_letter) {
-            case 'y':
-                return substr($singular, 0, -1) . 'ies';
+            case 'rs':
+                return $singular;
+            case 'in':
+            case 'ch':
             case 's':
+            case 'sh':
+            case 'x':
+            case 'z':
                 return $singular . 'es';
+            case 'f':
+                return substr($singular, 0, -1) . 'ves';
+            case 'fe':
+                return substr($singular, 0, -2) . 'ves';
+            case 'of':
+            case 'ief':
+            case 'ay':
+            case 'ey':
+            case 'iy':
+            case 'oy':
+            case 'uy':
             default:
                 return $singular . 's';
+            case 'y':
+                return substr($singular, 0, -1) . 'ies';
         }
+    }
+
+    public static function singular($plural)
+    {
+        if (self::endsWith($plural, 'ies'))
+            return substr($plural, 0, -3) . 'y';
+        if (self::endsWith($plural, 'es'))
+            return substr($plural, 0, -1);
+        if (self::endsWith($plural, 's'))
+            return substr($plural, 0, -1);
+
+        return $plural;
+    }
+
+    /**
+     * Function to check the string is ends with given substring or not
+     * @param $string
+     * @param $endString
+     * @return bool
+     */
+    public static function endsWith($string, $endString)
+    {
+        return substr($string, -strlen($endString)) === $endString;
+    }
+
+    /**
+     * Function to check string starting with given substring
+     * @param $string
+     * @param $startString
+     * @return bool
+     */
+    public static function startsWith($string, $startString)
+    {
+        return substr($string, 0, strlen($startString)) === $startString;
     }
 
     /**
@@ -89,14 +141,33 @@ abstract class Str
 
     /**
      * Check if string(haystack) contains the substring(needle)
-     *
      * @param string $haystack
      * @param string $needle
      * @return bool
      */
     public static function contains(string $haystack, string $needle): bool
     {
-        return strpos($haystack, $needle) > 0;
+        return strpos(strtolower($haystack), strtolower($needle)) !== false;
+    }
+
+    /**
+     * Removes\replaces blank lines from a string
+     * @param string $string string to trim blanks
+     * @param string $to replacement
+     * @return string string without blank\ with replaced blanks
+     */
+    public static function trimLine(string $string, string $to = ''): string
+    {
+        $content = explode("\n", $string);
+        $result = [];
+
+        foreach ($content as $line) {
+            $line = trim($line);
+            if (strlen($line) !== 0) {
+                array_push($result, $line);
+            }
+        }
+        return implode($to, $result);
     }
 
 }
