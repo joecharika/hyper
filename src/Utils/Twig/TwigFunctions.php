@@ -11,8 +11,10 @@ namespace Hyper\Twig;
 use Hyper\Application\HyperApp;
 use Hyper\Files\Folder;
 use Hyper\Files\ImageHandler;
+use Hyper\Functions\Arr;
 use Hyper\Functions\Logger;
 use Hyper\Functions\Str;
+use Hyper\Http\Request;
 use Hyper\PWA\ProgressiveWebApp;
 use Twig\Environment;
 use Twig\TwigFunction;
@@ -21,11 +23,17 @@ abstract class TwigFunctions
 {
     public static function attach(Environment &$twig)
     {
-        foreach (['img', 'optImg', 'base64', 'css', 'js', 'asset', 'get', 'pwa'] as $fn)
+        foreach (['img', 'optImg', 'base64', 'css', 'js', 'asset', 'get', 'pwa', 'route'] as $fn)
             $twig->addFunction(new TwigFunction($fn, "Hyper\\Twig\\TwigFunctions::$fn"));
     }
 
     #region Functions
+    static function route($action, $controller = null, $routeParams = [], $query = [])
+    {
+        return ($controller ?? Request::route()->controllerName) . $action . Arr::spread($routeParams,
+                false) . Arr::spread($query, true, '&', '=');
+    }
+
     static function img($image, $path = 'img')
     {
         return "/assets/$path/$image";

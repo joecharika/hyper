@@ -18,7 +18,6 @@ use Hyper\Http\HttpMessage;
 use Hyper\Http\Request;
 use Hyper\Twig\TwigFilters;
 use Hyper\Twig\TwigFunctions;
-use Hyper\Utils\FormBuilder;
 use Hyper\Utils\Html;
 use Twig\{Environment, Error\Error, Error\LoaderError, Loader\FilesystemLoader};
 use Twig_Extensions_Extension_Array;
@@ -51,7 +50,8 @@ class BaseController
      */
     public function __construct()
     {
-        $this->name = $this->name ?? strtr(static::class, ['Controllers\\' => '', 'Controller' => '']);
+        $names = explode('\\', static::class);
+        $this->name = $this->name ?? strtr($names[array_key_last($names)], ['Controller' => '']);
         $this->model = $this->model ?? '\\Models\\' . Str::singular($this->name);
         $this->modelName = $this->modelName ?? Str::singular($this->name);
 
@@ -82,6 +82,7 @@ class BaseController
     public function view(string $view, $model = null, $message = null, $vars = [])
     {
         try {
+            $message  = $message ?? Request::message();
             $view = strtolower(str_replace('.', '/', $view));
             $twig = new Environment(new FilesystemLoader(Folder::views()));
 
@@ -107,7 +108,7 @@ class BaseController
                         'app' => HyperApp::instance(),
                         'appStorage' => HyperApp::$storage,
                         'route' => Request::route(),
-                        'notification' => $message instanceof HttpMessage
+                        'notification' => ($message instanceof HttpMessage || !isset($message))
                             ? $message
                             : new HttpMessage($message),
                         'html' => new Html(true),

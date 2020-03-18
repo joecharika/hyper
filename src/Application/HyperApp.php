@@ -248,7 +248,7 @@ class HyperApp
                 uniqid()
             );
 
-        switch (strtolower($route->realController)) {
+        switch (strtolower($route->controllerName)) {
             case 'api':
                 $this->api($route);
                 break;

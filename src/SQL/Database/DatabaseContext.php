@@ -66,7 +66,7 @@ class DatabaseContext
     {
         try {
             $this->query = new Query(Database::instance($databaseConfig ?? new DatabaseConfig()));
-            $this->context = strtolower(@array_reverse(explode('\\', strtr($context, ['/' => '\\'])))[0] ?? $context);
+            $this->context = @array_reverse(explode('\\', strtr($context, ['/' => '\\'])))[0] ?? $context;
             $this->model = self::getModel();;
             $this->dbTable = self::getTable();
 
@@ -85,16 +85,19 @@ class DatabaseContext
      */
     private function getModel()
     {
+        $context = $this->context;
+        if (class_exists($context))
+            return $context;
+
         $namespace = '\\Models\\';
-        $context = ucfirst($this->context);
 
         if (class_exists($namespace . $context))
-            return $namespace . ucfirst($context);
+            return $namespace . $context;
 
         $namespace = '\\Hyper\\Models\\';
 
         if (class_exists($namespace . $context))
-            return $namespace . ucfirst($context);
+            return $namespace . $context;
 
         return $context;
     }
@@ -139,7 +142,7 @@ class DatabaseContext
                                     'SQLAttributes'
                                 ) ?? '';
                             $value = $classVars[$property];
-                            $hasDefault = !isset($value) ? '' : (empty($value) ? '' : "DEFAULT $value");
+                            $hasDefault = !isset($value) ? '' : (empty($value) ? '' : "DEFAULT '$value'");
                             return "`$property` $type $sqlAttrs $hasDefault";
                         },
                         array_keys($classVars)
@@ -296,6 +299,7 @@ class DatabaseContext
                 ->exec($this->model)
                 ->getResult();
 
+
         if (!isset($obj))
             return null;
 
@@ -333,9 +337,7 @@ class DatabaseContext
      */
     public function toList(): array
     {
-        $list = $this->list;
-        $this->list = null;
-        return $list;
+        return $this->list;
     }
 
     /**

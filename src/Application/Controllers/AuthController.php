@@ -5,16 +5,15 @@
  * Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
  */
 
-namespace Controllers;
+namespace Hyper\Controllers;
 
 use Hyper\Annotations\action;
 use Hyper\Annotations\authorize;
 use Hyper\Application\Authorization;
-use Hyper\Controllers\Controller;
 use Hyper\Database\DatabaseContext;
 use Hyper\Http\{HttpMessage, HttpMessageType, Request};
 use Hyper\Functions\Debug;
-use Models\User;
+use Hyper\Models\User;
 
 /**
  * Class AuthController
@@ -39,21 +38,23 @@ class AuthController extends Controller
 
     /**
      * @action
+     * @param Request $request
      * @return string
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Request::redirectTo('signIn', 'auth', null, null);
+        return $request->redirectTo('signIn', 'auth', null, null);
     }
 
     /**
      * @authorize
      * @action
+     * @param Request $request
      * @return string
      */
-    public function signOut()
+    public function signOut(Request $request)
     {
-        return Request::redirectTo(
+        return $request->redirectTo(
             'index',
             'home',
             null,
@@ -66,13 +67,14 @@ class AuthController extends Controller
 
     /**
      * @action
+     * @param Request $request
      * @return string
      */
-    public function browserLogout()
+    public function browserLogout(Request $request)
     {
-        return Request::redirectToUrl(
-            Request::previousUrl(),
-            (new DatabaseContext('claim'))->delete(Request::params()->id) ? 'Logged out' : 'Failed to logout remote browser'
+        return $request->redirectToUrl(
+            $request->previousUrl(),
+            (new DatabaseContext('claim'))->delete($request->params()->id) ? 'Logged out' : 'Failed to logout remote browser'
         );
     }
 
@@ -143,14 +145,14 @@ class AuthController extends Controller
      */
     public function postSignIn(Request $request)
     {
-        $data = Request::data();
+        $data = $request->data();
 
         $result = User::isAuthenticated()
             ? $this->auth->getUser()
             : $this->auth->login($data->username, $data->password);
 
         if ($result instanceof \Hyper\Models\User)
-            return Request::redirectToUrl(@Request::get()->return ?? '/dashboard', "Welcome {$this->auth->getUser()}");
+            return $request->redirectToUrl(@$request->get()->return ?? '/dashboard', "Welcome {$this->auth->getUser()}");
 
         return $this->signIn($request, $data, new HttpMessage($result, HttpMessageType::DANGER));
     }
@@ -169,39 +171,40 @@ class AuthController extends Controller
     /**
      * @action
      * @authorize
+     * @param Request $request
      * @return string
      */
-    public function postPassword()
+    public function postPassword(Request $request)
     {
         $model = $this->db->first('id', User::getId());
         $oldPassword = $model->key;
-        $newPassword = $model->key = $this->auth->encrypt(Request::data()->n_password, $model->salt);
+        $newPassword = $model->key = $this->auth->encrypt($request->data()->n_password, $model->salt);
 
-        if ($oldPassword === $this->auth->encrypt(Request::data()->o_password, $model->salt)) {
-            if (Request::data()->n_password === Request::data()->c_password) {
+        if ($oldPassword === $this->auth->encrypt($request->data()->o_password, $model->salt)) {
+            if ($request->data()->n_password === $request->data()->c_password) {
                 if ($oldPassword !== $newPassword) {
                     if ($this->db->update($model))
-                        return Request::redirectTo(
+                        return $request->redirectTo(
                             'password',
                             'auth',
                             null,
-                            new HttpMessage('Successfully updated your password', HttpMessageType::SUCCESS),
+                            new HttpMessage('Successfully updated your password', HttpMessageType::SUCCESS)
                             );
 
-                    return Request::redirectTo(
+                    return $request->redirectTo(
                         'password',
                         'auth',
                         null,
                         new HttpMessage('Failed to update your password', HttpMessageType::DANGER)
                     );
                 } else
-                    return Request::redirectTo(
+                    return $request->redirectTo(
                         'password',
                         'auth',
                         null,
                         new HttpMessage('New password can\'t be the same as old password', HttpMessageType::WARNING)
                     );
-            } else return Request::redirectTo(
+            } else return $request->redirectTo(
                 'password',
                 'auth',
                 null,
@@ -209,7 +212,7 @@ class AuthController extends Controller
             );
         }
 
-        return Request::redirectTo(
+        return $request->redirectTo(
             'password',
             'auth',
             null,

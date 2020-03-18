@@ -20,8 +20,14 @@ class Generator
         return $start . uniqid() . uniqid() . uniqid() . uniqid() . date('jNWto.his');
     }
 
-    public static function forgeUrl(string $string)
+    /**
+     * @param $string|null
+     * @return string|null
+     */
+    public static function forgeUrl($string)
     {
-        return strtr(strtolower($string), [' ' => '-', '.' => '']);
+        return isset($string)
+            ? strtr(strtolower($string), [' ' => '-', '.' => ''])
+            : null;
     }
 }

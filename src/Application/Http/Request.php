@@ -7,8 +7,9 @@
 
 namespace Hyper\Http;
 
+use Hyper\Application\HyperApp;
 use Hyper\Exception\{HyperError, HyperHttpException, NullValueException};
-use Hyper\Functions\{Arr, Obj, Str};
+use Hyper\Functions\{Arr, Debug, Obj, Str};
 use Hyper\Reflection\Annotation;
 use Hyper\Routing\Route;
 use Hyper\SQL\SqlOperator;
@@ -85,23 +86,32 @@ class Request
      * @param string|HttpMessage $message Leave blank if message was included in $head. Message in head takes preference
      * @param array $query Additional query parameters
      * @return string
+     * @throws HyperHttpException
      */
     public function redirect($head, $message = null, array $query = [])
     {
         if (Str::contains($head, '?')) {
             $head = \explode('?', $head);
+
+            if(Str::contains($head[\array_key_last($head)] , 'message') && isset($message))
+                throw new HyperHttpException('Message definition is ambiguous. Redirect head contains message parameter, and the method message parameter is also defined');
+
             $message = $head[\array_key_last($head)];
+
             array_pop($head);
             $head = @$head[0];
         }
 
         if (Str::contains($head, '.'))
-            $head = strtr($head, ['.' => '/']);
+            $head = '/' . strtr($head, ['.' => '/']);
 
-        if (isset($message))
-            if (!Str::contains($message, 'message') || !($message instanceof \HttpMessage))
+
+        if (isset($message)) {
+            if (!$message instanceof HttpMessage)
                 $message = new HttpMessage($message);
-            else $message = '';
+            $message = "?$message";
+        }
+
 
         if (isset($query)) {
             foreach ($query as $key => $value) {
@@ -111,7 +121,10 @@ class Request
 
         $url = "$head$message";
 
-        header("Location: $url");
+        if (parse_url($url, PHP_URL_SCHEME) !== '')
+            header("Location: $url");
+        else
+            header("Location: /$url");
 
         return "Redirecting to $url...";
     }
@@ -223,6 +236,16 @@ class Request
             && strtolower(Request::route()->action) === Arr::key($params, 2, 'index');
     }
 
+    public static function isModular(){
+        $path = Request::path();
+        $pathAsArray = explode('/', $path);
+
+        $modules = HyperApp::instance()->config->modules;
+        $moduleName = $pathAsArray[1];
+
+        return isset($modules->$moduleName);
+    }
+
     /**
      * @return Route
      */
@@ -230,19 +253,24 @@ class Request
     {
         $path = Request::path();
         $pathAsArray = explode('/', $path);
+        $moduleName = $pathAsArray[1];
 
-        $action = Arr::key($pathAsArray, 2, 'Index');
+        $index = Request::isModular()
+            ? 1 : 0;
+
+        $action = Arr::key($pathAsArray, $index + 2, 'Index');
         $action = empty($action) ? 'Index' : $action;
 
-        $controller = Arr::key($pathAsArray, 1, 'Home');
+        $controller = Arr::key($pathAsArray, $index + 1, 'Home');
         $controller = empty($controller) ? 'Home' : $controller;
 
         return new Route(
             ucfirst(Str::toPascal($action, '-')),
-            '\\Controllers\\' . ucfirst(Str::toPascal($controller, '-')) . 'Controller',
+            (@HyperApp::instance()->config->modules->$moduleName ?? '\\Controllers\\') . ucfirst(Str::toPascal($controller, '-')) . 'Controller',
             $path,
             uniqid(),
-            $controller
+            $controller,
+            $moduleName
         );
     }
 
@@ -279,7 +307,7 @@ class Request
             if (property_exists(Request::data(), $property) || property_exists(Request::files(), $property)) {
                 if (Annotation::getPropertyAnnotation($class, $property, 'file')) {
                     $hasFile = !empty(Obj::property(Request::files(), $property)['tmp_name']);
-                    $object[$property] = $hasFile ? Request::files()->$property : Request::data()->$property;
+                    $object[$property] = $hasFile ? @Request::files()->$property : @Request::data()->$property;
                 } else $object[$property] = Request::data()->$property;
             }
         }
@@ -376,8 +404,9 @@ class Request
     {
         $model = null;
 
+
         if (!is_null(@Request::params()->id) or !is_null(@Request::data()->id)) {
-            $model = db(Str::singular(Request::$route->realController))
+            $model = db(Str::singular(Request::$route->controllerName))
                 ->first('id', Request::params()->id ?? Request::data()->id, SqlOperator::equal, $parents, $lists);
 
             if (!isset($model)) self::error(HyperHttpException::notFound());
@@ -399,13 +428,15 @@ class Request
     {
         $params = explode('/', self::path());
 
-        $id = Arr::key($params, 3, null);
+        $index = Request::isModular() ? 1 : 0;
+
+        $id = Arr::key($params, $index + 3, null);
         $id = strlen($id) === 0 ? null : $id;
 
         $obj = ['id' => $id];
 
-        if (count($params) > 3) {
-            foreach (array_slice((array)$params, 4) as $key => $value) {
+        if (count($params) > ($index + 3)) {
+            foreach (array_slice((array)$params, $index + 4) as $key => $value) {
                 $obj["param$key"] = $value;
             }
         }

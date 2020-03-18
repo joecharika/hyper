@@ -37,7 +37,11 @@ class Route
     public $controller;
 
     /** @var string */
-    public $realController;
+    public $controllerName;
+
+    /** @var string */
+    public $module;
+
     /**
      * @var string
      */
@@ -51,19 +55,17 @@ class Route
      * @param string $name
      * @param string|null $realController
      */
-    public function __construct(string $action, string $controller, string $path, string $name, string $realController = null)
+    public function __construct(string $action, string $controller, string $path, string $name, string $realController = null, $module = null)
     {
         $this->id = uniqid();
         $this->name = $name;
         $this->path = $path;
         $this->controller = $controller;
         $this->action = $action;
+        $this->module = $module;
 
-        $this->realController = $realController ?? strtr(strtolower($controller), [
-                'controller' => '',
-                '\\' => '',
-                'controllers' => ''
-            ]);
+        $names = explode('\\', $controller);
+        $this->controllerName= $realController ?? strtr($names[array_key_last($names)], ['Controller' => '']);
 
         HyperApp::event(HyperEventHook::routeCreated, $this);
     }

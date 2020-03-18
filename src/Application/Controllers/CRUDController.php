@@ -22,7 +22,7 @@ use Hyper\QueryBuilder\Query;
 class CRUDController extends BaseController
 {
     #region CONFIG
-    private
+    public
         /**
          * @var string
          */
@@ -65,7 +65,7 @@ class CRUDController extends BaseController
     public function create(Request $request, $model = null, $message = null)
     {
         return $this->view(
-            @$this->views['create'] ?? "{$this->controller}.create",
+            @$this->views['create'] ?? "/{$this->controller}/create",
             $model,
             $message
         );
@@ -84,7 +84,7 @@ class CRUDController extends BaseController
 
         if ($this->db->add($model))
             return $request->redirect(
-                @$this->redirects['create'] ?? "{$this->controller}/create",
+                (@$this->redirects['create'] ?? "/{$this->controller}/create"),
                 'Added successfully'
             );
 
@@ -106,7 +106,7 @@ class CRUDController extends BaseController
     public function read(Request $request)
     {
         return $this->view(
-            @$this->views['create'] ?? "{$this->controller}.create",
+            @$this->views['create'] ?? "/{$this->controller}/create",
             $request->fromParam()
         );
     }
@@ -127,7 +127,7 @@ class CRUDController extends BaseController
     public function edit(Request $request, object $model = null, $message = null)
     {
         return $this->view(
-            @$this->views['edit'] ?? "{$this->controller}.edit",
+            @$this->views['edit'] ?? "/{$this->controller}/edit",
             $model ?? $request->fromParam(),
             $message
         );
@@ -147,7 +147,7 @@ class CRUDController extends BaseController
         if ($this->db->update($model)) {
             $params = Arr::spread((array)$request->params, false, '.');
             return $request->redirect(
-                @$this->redirects['edit'] ?? "{$this->controller}.edit.{$params}",
+                (@$this->redirects['edit'] ?? "/{$this->controller}/edit/{$params}"),
                 'Successfully updated'
             );
         }
@@ -171,7 +171,7 @@ class CRUDController extends BaseController
     public function delete(Request $request, object $model = null, $message = null)
     {
         return $this->view(
-            @$this->views['edit'] ?? "{$this->controller}.edit",
+            @$this->views['edit'] ?? "/{$this->controller}/edit",
             $model ?? $request->fromParam()
         );
     }
@@ -189,7 +189,7 @@ class CRUDController extends BaseController
         if ($this->db->delete($model)) {
             $params = Arr::spread((array)$request->params, false, '.');
             return $request->redirect(
-                @$this->redirects['delete'] ?? "{$this->controller}.delete.{$params}",
+                (@$this->redirects['delete'] ?? "/{$this->controller}/delete.{$params}"),
                 'Successfully deleted'
             );
         }
@@ -209,7 +209,7 @@ class CRUDController extends BaseController
     public function deleteAll(Request $request, $model = null, $message = null)
     {
         return $this->view(
-            @$this->views['delete-all'] ?? "{$this->controller}.delete-all",
+            @$this->views['delete-all'] ?? "/{$this->controller}/delete-all",
             $model ?? $this->db->all()->toList(),
             $message
         );
@@ -226,7 +226,7 @@ class CRUDController extends BaseController
     {
         if ($this->db->delete(null, true, true))
             return $request->redirect(
-                @$this->views['delete-all'] ?? "{$this->controller}.",
+                @$this->views['delete-all'] ?? "/{$this->controller}/",
                 'Successfully deleted all'
             );
 
@@ -256,7 +256,7 @@ class CRUDController extends BaseController
             );
 
         return $this->view(
-            @$this->views['recycle-bin'] ?? "{$this->controller}.recycle-bin",
+            @$this->views['recycle-bin'] ?? "/{$this->controller}/recycle-bin",
             $recycleBin
         );
     }
@@ -271,14 +271,14 @@ class CRUDController extends BaseController
     public function postRecycle(Request $request)
     {
         $entity = (new Query)
-            ->selectFrom(Str::pluralize($request->currentRoute->realController))
+            ->selectFrom(Str::pluralize($request->currentRoute->controllerName))
             ->where('id', $request->data->id)
             ->exec($this->model)
             ->getResult();
 
         if ($this->db->recycle($entity))
             return $request->redirect(
-                @$this->views['recycle-bin'] ?? "{$this->controller}.recycle-bin",
+                @$this->views['recycle-bin'] ?? "/{$this->controller}/recycle-bin",
                 'Restored item'
             );
 

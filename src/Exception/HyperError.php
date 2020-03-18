@@ -60,7 +60,7 @@ trait HyperError
 
             $file = $config->debug
                 ? 'error-debug.html.twig'
-                : Obj::property($config->errors->custom, $error->code, $config->errors->default);
+                : Obj::property($config->errors->custom, $error->getCode(), $config->errors->default);
 
             try {
                 $log = $config->debug
@@ -117,7 +117,7 @@ trait HyperError
 
         $twig = new Environment(new FilesystemLoader(
                 $config->debug || empty((array)$config->errors->custom)
-                    ? __DIR__ . '/../'
+                    ? __DIR__ . '/../Views'
                     : Folder::views())
         );
         $baseController = new BaseController;

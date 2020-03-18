@@ -26,6 +26,7 @@ class HyperEventHook
         routeCreated = 'onRouteCreated',
         routingCompleted = 'onRoutingCompleted',
         renderingStarting = 'onRenderingStarting',
+        queryExecuting = 'onQueryExecuting',
         error = 'onError',
         renderingCompleted = 'onRenderingCompleted';
 
@@ -37,6 +38,7 @@ class HyperEventHook
         self::routingCompleted,
         self::renderingStarting,
         self::renderingCompleted,
+        self::queryExecuting,
         self::error
     ];
 

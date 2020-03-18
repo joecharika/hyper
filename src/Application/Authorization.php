@@ -8,6 +8,7 @@
 namespace Hyper\Application;
 
 
+use Exception;
 use Hyper\Database\DatabaseContext;
 use Hyper\Functions\{Obj};
 use Hyper\Http\Cookie;
@@ -33,7 +34,7 @@ class Authorization
     private $users;
 
     /** @var string */
-    private $cryptoAlgorithm = 'whirlpool';
+    private $cryptoAlgorithm = PASSWORD_DEFAULT;
 
     /** @var Cookie */
     private $cookie;
@@ -113,6 +114,7 @@ class Authorization
      * @param string $password
      * @param string $role
      * @return User|string
+     * @throws Exception
      */
     public function register(string $username, string $password, $role = 'default')
     {
@@ -123,43 +125,46 @@ class Authorization
 
         if (strlen($password) < 8) return 'Password must be at least 8 characters long';
 
-        $user->id = uniqid();
-        $user->salt = uniqid();
+        $alpo = 'whirlpool';
+        $user->id = hash($alpo, uniqid());
+        $user->salt = hash($alpo, uniqid());
         $user->key = $this->encrypt($password, $user->salt);
         $user->name = $username;
         $user->role = $role;
 
         if ($this->users->add($user))
-            return $this->login($username, $password);
+            return $this->login($username, $password, $user);
 
         return 'Registration failed';
     }
 
     /**
-     * Generate a PBKDF2 key derivation of a supplied password
+     * Hash a password
      * @param string $password
      * @param string $salt
      * @return mixed
+     * @throws Exception
      */
     public function encrypt(string $password, $salt = null): string
     {
-        return hash_pbkdf2($this->cryptoAlgorithm, $password, $salt ?? uniqid(), 7);
+        return password_hash($password . ($salt ?? random_bytes(7)), $this->cryptoAlgorithm);
     }
 
     /**
      * Sign in a user with username and password
      * @param string $username
      * @param string $password
+     * @param null $user
      * @return User|string
      */
-    public function login(string $username, string $password)
+    public function login(string $username, string $password, $user = null)
     {
         #Get user from the database
-        $this->user = $this->users->first('username', $username);
+        $this->user = $user ?? $this->users->first('username', $username);
 
         if (isset($this->user)) {
             if ($this->user->lockedOut) return 'Your account has been disabled. Contact admin for more';
-            if ($this->user->key === $this->encrypt($password, $this->user->salt)) {
+            if (password_verify($password . $this->user->salt, $this->user->key)) {
                 if ($this->createSession($this->user))
                     return HyperApp::$user = $this->user;
             } else return 'Password is incorrect';
@@ -179,8 +184,8 @@ class Authorization
 
         # Create a new login claim
         $update = $this->claims
-            ->add((new Claim())
-                ->setId(uniqid())
+            ->add((new Claim)
+                ->setId(hash('whirlpool', uniqid()))
                 ->setToken($newToken)
                 ->setUserId($user->id)
                 ->setBrowser(General::browser())

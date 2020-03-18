@@ -10,6 +10,8 @@ namespace Hyper\QueryBuilder;
 
 use ArrayObject;
 use Hyper\Database\{Database, DatabaseConfig};
+use Hyper\Application\HyperApp;
+use Hyper\Application\HyperEventHook;
 use Hyper\Exception\{HyperError, HyperException};
 use Hyper\Functions\{Arr, Logger, Str};
 use Hyper\SQL\SqlOperator;
@@ -660,6 +662,9 @@ class Query
     public function exec($fetch = 'array', $fetchMode = 2): QueryResult
     {
         try {
+
+            HyperApp::event(HyperEventHook::queryExecuting, $this->query);
+
             $queryResult = !empty(Database::$queries[$this->query]) ?
                 (array_key_exists($this->query, Database::$queries)
                     ? $this->executedQuery($this->query)

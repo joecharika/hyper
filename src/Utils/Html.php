@@ -8,6 +8,8 @@
 namespace Hyper\Utils;
 
 
+use Hyper\Functions\Arr;
+use Hyper\Functions\Str;
 use InvalidArgumentException;
 use Traversable;
 
@@ -940,22 +942,17 @@ class Html
      */
     public static function list(array $items, $options = []): string
     {
-        $type = safeArrayGet($options, 'type', 'ul');
-        $listAttributes = safeArrayGet($options, 'listAttributes', []);
-        $itemAttributes = safeArrayGet($options, 'itemAttributes', []);
-        $itemHtml = safeArrayGet($options, 'itemHtml', null);
-        $beforeHtml = safeArrayGet($options, 'beforeHtml', '');
-        $afterHtml = safeArrayGet($options, 'afterHtml', '');
+        $type = Arr::key($options, 'type', 'ul');
+        $listAttributes = Arr::key($options, 'listAttributes', []);
+        $itemAttributes = Arr::key($options, 'itemAttributes', []);
+        $itemHtml = Arr::key($options, 'itemHtml', null);
+        $beforeHtml = Arr::key($options, 'beforeHtml', '');
+        $afterHtml = Arr::key($options, 'afterHtml', '');
 
         $innerHtml = $beforeHtml;
 
-        if (preg_match("/{{(.*?)}}/s", "$itemHtml") !== false) {
-            $innerHtml .= Html::create("h-foreach", ["for" => '$item', "in" => "[" . implode(',', $items) . "]"],
-                "$itemHtml");
-        } else {
-            foreach ($items as $item) {
-                $innerHtml .= is_null($itemHtml) ? Html::create('li', $itemAttributes, (string)$item) : $itemHtml;
-            }
+        foreach ($items as $item) {
+            $innerHtml .= Str::contains($item, '<li>') ? $item : Html::create('li', $itemAttributes, (string)$item);
         }
 
         $innerHtml .= $afterHtml;
@@ -973,15 +970,15 @@ class Html
      */
     public static function table($heading = null, $content = null, $footer = null, $attributes = array(), $delimiter = "|")
     {
-        $heading = Html::tHeaderRow($heading, safeArrayGet($attributes, "headerAttributes", []),
-            safeArrayGet($attributes, "headerColumnAttributes", []), $delimiter);
-        $content = Html::tBody($content, safeArrayGet($attributes, "bodyAttributes", []),
-            safeArrayGet($attributes, "rowAttributes", []), safeArrayGet($attributes, "columnAttributes", []),
+        $heading = Html::tHeaderRow($heading, Arr::key($attributes, "headerAttributes", []),
+            Arr::key($attributes, "headerColumnAttributes", []), $delimiter);
+        $content = Html::tBody($content, Arr::key($attributes, "bodyAttributes", []),
+            Arr::key($attributes, "rowAttributes", []), Arr::key($attributes, "columnAttributes", []),
             $delimiter);
-        $footer = Html::tFooterRow($footer, safeArrayGet($attributes, "footerAttributes", []),
-            safeArrayGet($attributes, "footerColumnAttributes", []), $delimiter);
+        $footer = Html::tFooterRow($footer, Arr::key($attributes, "footerAttributes", []),
+            Arr::key($attributes, "footerColumnAttributes", []), $delimiter);
 
-        return Html::create('table', safeArrayGet($attributes, "tableAttributes", []), ""
+        return Html::create('table', Arr::key($attributes, "tableAttributes", []), ""
             . $heading
             . $content
             . $footer
