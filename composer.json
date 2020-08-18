@@ -1,5 +1,5 @@
 {
-  "name": "hyper/hyper",
+  "name": "joechark/hyper-php",
   "type": "library",
   "description": "Hyper, fast MVC framework for PHP",
   "keywords": [
