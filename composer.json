@@ -19,7 +19,7 @@
     "funcphp/twig-compress": "dev-master",
     "ext-pdo": "*",
     "ext-json": "*",
-    "ext-mysqli": "*",
+    "ext-mysqli": "*"
   },
   "autoload": {
     "psr-4": {
