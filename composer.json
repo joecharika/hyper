@@ -15,12 +15,11 @@
     }
   ],
   "require": {
-    "twig/twig": "^2.0",
+    "twig/twig": "^3.0",
     "funcphp/twig-compress": "dev-master",
     "ext-pdo": "*",
     "ext-json": "*",
     "ext-mysqli": "*",
-    "twig/extensions": "^1.5"
   },
   "autoload": {
     "psr-4": {
