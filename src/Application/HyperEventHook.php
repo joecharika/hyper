@@ -1,0 +1,95 @@
+<?php
+/**
+ * Hyper v0.7.2-beta.2 (https://hyper.starlight.co.zw)
+ * Copyright (c) 2020. Joseph Charika
+ * Licensed under MIT (https://github.com/joecharika/hyper/master/LICENSE)
+ */
+
+namespace Hyper\Application;
+
+
+use Error;
+use Exception;
+use Hyper\Exception\HyperError;
+use Hyper\Exception\HyperException;
+use function array_key_exists;
+use function array_search;
+
+class HyperEventHook
+{
+    use HyperError;
+
+    const boot = 'onBoot',
+        booted = 'onBooted',
+        routingStarting = 'onRoutingStarting',
+        routeCreated = 'onRouteCreated',
+        routingCompleted = 'onRoutingCompleted',
+        renderingStarting = 'onRenderingStarting',
+        queryExecuting = 'onQueryExecuting',
+        error = 'onError',
+        exiting = 'onComplete',
+        renderingCompleted = 'onRenderingCompleted';
+
+    private array $definedHooks = [
+        self::boot,
+        self::booted,
+        self::routeCreated,
+        self::routingStarting,
+        self::routingCompleted,
+        self::renderingStarting,
+        self::renderingCompleted,
+        self::queryExecuting,
+        self::error,
+        self::exiting
+    ], $events = [];
+
+    public function __construct(array $events)
+    {
+        if (array_search(self::error, array_keys($events)) === false)
+            $this->setEventHook(
+                self::error,
+                function (Event $event) {
+                    /** @var HyperException $exc */
+                    $exc = $event->data;
+
+                    if ($exc instanceof Exception || $exc instanceof Error) {
+                        self::error($exc);
+                    } else {
+                        self::error((new HyperException('<small><i>A hyper unrelated error occurred, and all we know is this:</i></small> <br> ' . $exc)));
+                    }
+                });
+
+        foreach ($events as $event => $function) {
+            if (array_search($event, $this->definedHooks) !== false) {
+                $this->setEventHook($event, $function);
+            } else self::error('Unknown event hook: ' . $event);
+        }
+    }
+
+    public function setEventHook($name, $callable)
+    {
+        $this->events[$name] = $callable;
+
+        if ($name === self::error) {
+
+            $handler = function ($exec, $code = null) use ($callable) {
+                \call_user_func(
+                    $callable,
+                    new Event(self::error, $exec)
+                );
+            };
+
+            if (!HyperApp::$debug)
+                set_error_handler($handler);
+
+            set_exception_handler($handler);
+        }
+    }
+
+    public function emit($eventName, $data = null)
+    {
+        if (array_key_exists($eventName, $this->events))
+            \call_user_func($this->events[$eventName],
+                (new Event($eventName, $data)));
+    }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "joecharika/hyper-php",
+  "type": "library",
+  "description": "Hyper, fast MVC framework for PHP",
+  "keywords": [
+    "MVC","Light weight", "Hyper"
+  ],
+  "homepage": "http://github.com/joecharika/hyper",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Joseph Charika",
+      "email": "joecharika@gmail.com"
+    }
+  ],
+  "require": {
+    "twig/twig": "^3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Hyper\\": "src/"
+    }
+  }
+}
